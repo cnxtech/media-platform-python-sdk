@@ -15,15 +15,18 @@ class OperationStatus(object):
 
 class Operation(Component):
     def __init__(self, component_type, specification, successors, status, delete_sources=False, sources=None,
-                 results=None, jobs=None, extra_results=None, error_message=None, error_code=None):
-        # type: (ComponentType, Specification, [str], OperationStatus, bool, [Source], [FileDescriptor] or [dict], [str], dict, str, int) -> None
-        super(Operation, self).__init__(component_type, specification, successors, delete_sources)
+                 results=None, jobs=None, extra_results=None, error_message=None, error_code=None, state_id=None,
+                 component_key=None):
+        # type: (ComponentType, Specification, [str], OperationStatus, bool, [Source], [FileDescriptor] or [dict], [str], dict, str, int, str, str) -> None
+        super(Operation, self).__init__(component_type, specification, successors, delete_sources, sources=sources)
         self.status = status
         self.results = results or []
         self.jobs = jobs or []
         self.extra_results = extra_results or {}
         self.error_message = error_message
         self.error_code = error_code
+        self.state_id = state_id
+        self.component_key = component_key
 
     @classmethod
     def deserialize(cls, data):
@@ -38,7 +41,7 @@ class Operation(Component):
 
         return Operation(component.type, component.specification, component.successors, data['status'],
                          component.delete_sources, component.sources, results, jobs, extra_results,
-                         data.get('errorMessage'), data.get('errorCode'))
+                         data.get('errorMessage'), data.get('errorCode'), data.get('stateId'), data.get('componentKey'))
 
     def serialize(self):
         data = super(Operation, self).serialize()
@@ -55,5 +58,11 @@ class Operation(Component):
 
         if self.error_message:
             data['errorMessage'] = self.error_message
+
+        if self.state_id:
+            data['stateId'] = self.state_id
+
+        if self.component_key:
+            data['componentKey'] = self.component_key
 
         return data
